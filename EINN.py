@@ -896,7 +896,8 @@ class EINN(nn.Module):
 
         ############## optimizers #############
         # time nn only
-        time_params = itertools.chain(self.time_nn_mod.parameters(),self.out_layer.parameters()) 
+        time_params = itertools.chain(self.time_nn_mod.parameters(),self.out_layer.parameters())
+        print(time_params)
         optimizer_time = torch.optim.Adam(time_params, lr=self.lr, amsgrad=True)
         # time nn + ode only
         time_ode_params = itertools.chain(self.time_nn_mod.parameters(),self.ode.parameters(),\
@@ -1171,14 +1172,16 @@ class EINN(nn.Module):
         except:
             raise Exception('no model loaded')
 
-        """  train time nn + ode """
-        self.train_time_ode()
+        self.train_time_only()
 
-        """  train time + ode + feat """
-        self.train_time_ode_feat()
-        
-        """  add ODE-F and train output layer """
-        self.train_out_layers()
+        # """  train time nn + ode """
+        # self.train_time_ode()
+        #
+        # """  train time + ode + feat """
+        # self.train_time_ode_feat()
+        #
+        # """  add ODE-F and train output layer """
+        # self.train_out_layers()
 
         """ save predictions """
         self.predict_save()
@@ -1193,6 +1196,14 @@ class EINN(nn.Module):
         EPOCHS = self.num_epochs
         self._train(epochs=EPOCHS,time_reps=1,time_ode_reps=1,feat_time_reps=0,out_reps=0)  
         return 
+
+    def train_time_only(self):
+        ''' alternate training avoids messing up the ODE initialization '''
+
+        print('\n====== train time nn + ode =======')
+        EPOCHS = self.num_epochs
+        self._train(epochs=EPOCHS,time_reps=1,time_ode_reps=0,feat_time_reps=0,out_reps=0)
+        return
 
     def train_time_ode_feat(self):
         ''' resets ode, trains time + feature'''
